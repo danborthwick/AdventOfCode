@@ -2,7 +2,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class Day5MD5 {
+public class Day4MD5 {
     public static int getLowestNumberWithZeroHash(String secretKey, int minLeadingZeroes) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 
         MessageDigest md = MessageDigest.getInstance("MD5");
