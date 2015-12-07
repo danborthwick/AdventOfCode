@@ -9,7 +9,7 @@ public interface StringProvider {
     static StringProvider forFile(String filename) throws Exception {
         return new StringProvider() {
 
-            FileInputStream fstream = new FileInputStream("Day2Input.txt");
+            FileInputStream fstream = new FileInputStream(filename);
             BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
             String nextLine = br.readLine();
 
@@ -23,6 +23,23 @@ public interface StringProvider {
             @Override
             public boolean hasMore() {
                 return nextLine != null;
+            }
+        };
+    }
+
+    static StringProvider forArray(String[] strings) {
+        return new StringProvider() {
+
+            int position = 0;
+
+            @Override
+            public String next() throws Exception {
+                return strings[position++];
+            }
+
+            @Override
+            public boolean hasMore() {
+                return position < strings.length;
             }
         };
     }
