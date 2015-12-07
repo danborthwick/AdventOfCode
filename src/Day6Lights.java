@@ -1,14 +1,6 @@
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.util.regex.Pattern;
-
 public class Day6Lights {
     public static int countLights() throws Exception {
-        FileInputStream fstream = new FileInputStream("Day6Input.txt");
-        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-
-        String strLine;
+        StringProvider input = StringProvider.forFile("Day6Input.txt");
         boolean[][] lights = new boolean[1000][1000];
         for (boolean[] row : lights) {
             for (int x =0; x < row.length; x++) {
@@ -16,8 +8,8 @@ public class Day6Lights {
             }
         }
 
-        while ((strLine = br.readLine()) != null)   {
-            apply(strLine, lights);
+        while (input.hasMore())   {
+            apply(input.next(), lights);
         }
 
         return countOn(lights);

@@ -4,14 +4,11 @@ import java.io.InputStreamReader;
 
 public class Day6Lights2 {
     public static int countLights() throws Exception {
-        FileInputStream fstream = new FileInputStream("Day6Input.txt");
-        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-
-        String strLine;
+        StringProvider input = StringProvider.forFile("Day6Input.txt");
         int[][] lights = new int[1000][1000];
 
-        while ((strLine = br.readLine()) != null)   {
-            apply(strLine, lights);
+        while (input.hasMore())   {
+            apply(input.next(), lights);
         }
 
         return countOn(lights);
