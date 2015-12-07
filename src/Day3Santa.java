@@ -8,10 +8,8 @@ import java.util.Set;
 public class Day3Santa {
 
     public static long getWrappingPaper() throws Exception {
-        FileInputStream fstream = new FileInputStream("Day3Input.txt");
-        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-        String strLine = br.readLine();
-        return getRecipientCount(strLine);
+        StringProvider input = StringProvider.forFile("Day3Input.txt");
+        return getRecipientCount(input.next());
     }
 
     public static int getRecipientCount(String input) throws Exception {

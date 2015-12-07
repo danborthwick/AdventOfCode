@@ -7,18 +7,13 @@ import java.util.List;
 
 public class Day2Boxes {
 
-    public static long getWrappingPaper() throws IOException {
+    public static long getWrappingPaper() throws Exception {
         int totalArea = 0;
 
-        FileInputStream fstream = new FileInputStream("Day2Input.txt");
-        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-
-        String strLine;
-
-//Read File Line By Line
-        while ((strLine = br.readLine()) != null)   {
+        StringProvider input = StringProvider.forFile("Day2Input.txt");
+        while (input.hasMore())   {
             List<Integer> dimensions = new ArrayList(3);
-            for (String s : strLine.split("x")) {
+            for (String s : input.next().split("x")) {
                 dimensions.add(Integer.parseInt(s));
             }
             totalArea += paperArea(dimensions);
@@ -39,7 +34,7 @@ public class Day2Boxes {
         return result;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         System.out.println("Required " + getWrappingPaper());
     }
 }

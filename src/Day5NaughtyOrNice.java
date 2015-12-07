@@ -5,14 +5,11 @@ import java.util.regex.Pattern;
 
 public class Day5NaughtyOrNice {
     public static int countNiceA() throws Exception {
-        FileInputStream fstream = new FileInputStream("Day5Input.txt");
-        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-
-        String strLine;
+        StringProvider input = StringProvider.forFile("Day5Input.txt");
         int niceStrings = 0;
 
-        while ((strLine = br.readLine()) != null)   {
-            if (isNiceA(strLine)) {
+        while (input.hasMore())   {
+            if (isNiceA(input.next())) {
                 niceStrings++;
             }
         }
