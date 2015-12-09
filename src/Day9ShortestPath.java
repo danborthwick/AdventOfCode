@@ -23,6 +23,7 @@ public class Day9ShortestPath {
             Integer distance = Integer.valueOf(matcher.group(3));
 
             set(from, to, distance);
+            set(to, from, distance);
         }
     }
 
@@ -49,7 +50,7 @@ public class Day9ShortestPath {
 
         for (int from=0; from < order.size() - 1; from++) {
             int to = from + 1;
-            length += fromToDist.get(from).get(to);
+            length += fromToDist.get(order.get(from)).get(order.get(to));
         }
 
         return length;
@@ -77,5 +78,30 @@ public class Day9ShortestPath {
         });
 
         return shortestFound.value;
+    }
+
+    public int longestPath() {
+        List<Integer> visitOrder = new ArrayList(nameToId.size());
+        for (int i=0; i < nameToId.size(); i++) {
+            visitOrder.add(i);
+        }
+
+        final MutableInt longestFound = new MutableInt(Integer.MIN_VALUE);
+
+        new Permutor(visitOrder).apply((order) -> {
+            longestFound.value = Math.max(longestFound.value, lengthOfPath(order));
+            return null;
+        });
+
+        return longestFound.value;
+    }
+
+    public static void main(String[] args) throws Exception
+    {
+        StringProvider input = StringProvider.forFile("Day9Input.txt");
+        Day9ShortestPath pathCalculator = new Day9ShortestPath(input);
+
+        System.out.println("Shortest Path: " + pathCalculator.shortestPath());
+        System.out.println("Longest Path: " + pathCalculator.longestPath());
     }
 }
