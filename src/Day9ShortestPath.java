@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,14 +57,6 @@ public class Day9ShortestPath {
         return length;
     }
 
-    class MutableInt {
-        public int value;
-
-        public MutableInt(int value) {
-            this.value = value;
-        }
-    }
-
     public int shortestPath() {
         List<Integer> visitOrder = new ArrayList(nameToId.size());
         for (int i=0; i < nameToId.size(); i++) {
@@ -72,9 +65,13 @@ public class Day9ShortestPath {
 
         final MutableInt shortestFound = new MutableInt(Integer.MAX_VALUE);
 
-        new Permutor(visitOrder).apply((order) -> {
-            shortestFound.value = Math.min(shortestFound.value, lengthOfPath(order));
-            return null;
+        Permutor<Integer> permutor = new Permutor(visitOrder);
+        permutor.permute(new Function<List<Integer>, Void>() {
+            @Override
+            public Void apply(List<Integer> order) {
+                shortestFound.value = Math.min(shortestFound.value, lengthOfPath(order));
+                return null;
+            }
         });
 
         return shortestFound.value;
@@ -88,9 +85,12 @@ public class Day9ShortestPath {
 
         final MutableInt longestFound = new MutableInt(Integer.MIN_VALUE);
 
-        new Permutor(visitOrder).apply((order) -> {
-            longestFound.value = Math.max(longestFound.value, lengthOfPath(order));
-            return null;
+        new Permutor(visitOrder).permute(new Function<List, Void>() {
+            @Override
+            public Void apply(List order) {
+                longestFound.value = Math.max(longestFound.value, lengthOfPath(order));
+                return null;
+            }
         });
 
         return longestFound.value;
