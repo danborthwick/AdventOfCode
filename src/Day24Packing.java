@@ -16,29 +16,40 @@ public class Day24Packing {
         totalWeight =  weights.stream().mapToInt(Integer::intValue).sum();
     }
 
-    public int quantumEntanglement() {
+    public long quantumEntanglement(final int compartments) {
 
-        final int weightPerCompartment = totalWeight / 3;
-        final int maxPassengerCompartmentSize = weights.size() / 3;
+        final int weightPerCompartment = totalWeight / compartments;
+        final int maxPassengerCompartmentSize = weights.size() / compartments;
 
         Chooser<Integer> chooser = new Chooser<>(weights);
-        final List<Integer>[] passengerConfiguration = new List[] { null };
+        final List<List<Integer>> passengerConfigurations = new ArrayList();
 
-        for (int size = 1; (size <= maxPassengerCompartmentSize) && (passengerConfiguration[0] == null); size++) {
+        for (int size = 1; (size <= maxPassengerCompartmentSize) && (passengerConfigurations.isEmpty()); size++) {
             chooser.choose(size, l -> {
                 if (hasWeight(l, weightPerCompartment)) {
-                    passengerConfiguration[0] = new ArrayList<>(l);
+                    passengerConfigurations.add(new ArrayList<>(l));
                 }
                 return null;
             });
         }
 
+        passengerConfigurations.sort((a, b) -> Long.compare(entanglement(a), entanglement(b)));
 
-
-        return -1;
+        return entanglement(passengerConfigurations.get(0));
     }
 
     private boolean hasWeight(List<Integer> configuration, int weightPerCompartment) {
         return configuration.stream().mapToInt(Integer::valueOf).sum() == weightPerCompartment;
+    }
+
+    private long entanglement(List<Integer> configuration) {
+        return configuration.stream().mapToLong(Long::valueOf).reduce(1, (a, b) -> a * b);
+    }
+
+    public static void main(String[] args) throws Exception {
+        StringProvider input = StringProvider.forFile("Day24Input.txt");
+        Day24Packing packing = new Day24Packing(input);
+        System.out.println("For 3 compartments: " + packing.quantumEntanglement(3));
+        System.out.println("For 4 compartments: " + packing.quantumEntanglement(4));
     }
 }
