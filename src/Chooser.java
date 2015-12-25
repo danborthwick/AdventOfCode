@@ -32,7 +32,11 @@ public class Chooser<T> {
         }
     }
 
-    private long factorial(int n) {
+    public long numberOfChoices(final int n) {
+        return factorial(from.size()) / (factorial(n) * factorial(from.size() - n));
+    }
+
+    private static long factorial(int n) {
         long result = 1;
         for (int i=2; i <= n; i++) {
             result *= i;
