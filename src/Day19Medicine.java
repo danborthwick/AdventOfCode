@@ -65,34 +65,19 @@ public class Day19Medicine {
     }
 
     public int stepsFromETo(String molecule) {
-        return helper(molecule, new HashSet<String>());
+        int totalElements = matchCount(molecule, "[A-Z][a-z]?");
+        int rnArMatches = matchCount(molecule, "Ar|Rn");
+        int yMatches = matchCount(molecule, "Y");
+        return totalElements - rnArMatches - (2 * yMatches) - 1;
     }
 
-    private int helper(String molecule, HashSet<String> known) {
-        int minFound = 1000000;
-
-        if (known.contains(molecule)) {
-                return minFound;
+    private int matchCount(String input, String regex) {
+        Matcher matcher = Pattern.compile(regex).matcher(input);
+        int matches = 0;
+        while (matcher.find()) {
+            matches++;
         }
-        else {
-            known.add(molecule);
-        }
-
-        for (Replacement replacement : replacements) {
-            Matcher matcher = replacement.toPattern.matcher(molecule);
-
-            while (matcher.find()) {
-                String newMolecule = makeMolecule(matcher, molecule, replacement.from);
-                if (newMolecule.equals("e")) {
-                    minFound = 1;
-                }
-                else {
-                    minFound = Math.min(minFound, helper(newMolecule, known) + 1);
-                }
-            }
-        }
-
-        return minFound;
+        return matches;
     }
 
     public static void main(String[] args) throws Exception {
