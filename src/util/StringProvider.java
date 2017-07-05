@@ -3,6 +3,8 @@ package util;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public interface StringProvider {
     String next() throws Exception;
@@ -44,5 +46,13 @@ public interface StringProvider {
                 return position < strings.length;
             }
         };
+    }
+
+    default List<String> asList() throws Exception {
+        List<String> list = new ArrayList<>();
+        while (hasMore()) {
+            list.add(next());
+        }
+        return list;
     }
 }
