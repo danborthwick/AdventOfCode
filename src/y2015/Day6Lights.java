@@ -1,4 +1,5 @@
 package y2015;
+import util.*;
 
 public class Day6Lights {
     public static int countLights() throws Exception {

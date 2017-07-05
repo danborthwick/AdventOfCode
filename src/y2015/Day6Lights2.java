@@ -1,8 +1,6 @@
 package y2015;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import util.StringProvider;
 
 public class Day6Lights2 {
     public static int countLights() throws Exception {

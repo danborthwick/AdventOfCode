@@ -1,4 +1,5 @@
 package y2015;
+import util.*;
 
 public class Day8Escaping {
     public static int codeMemoryDifference(StringProvider input) throws Exception

@@ -1,5 +1,7 @@
 package y2015;
 
+import util.StringProvider;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;

@@ -1,9 +1,10 @@
 package y2015;
 
 import org.junit.Test;
+import util.StringProvider;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class Day18GameOfLightsTest {
 
