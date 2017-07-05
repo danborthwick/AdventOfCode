@@ -6,4 +6,8 @@ public class MutableInt {
     public MutableInt(int value) {
             this.value = value;
         }
+
+    public void increment() {
+        value++;
+    }
 }
