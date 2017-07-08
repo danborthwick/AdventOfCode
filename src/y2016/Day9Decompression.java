@@ -2,10 +2,11 @@ package y2016;
 
 import util.StringProvider;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import static java.lang.Integer.parseInt;
 
@@ -37,46 +38,24 @@ public class Day9Decompression {
         return output.length();
     }
 
-    static int decompressedLength2(String input) {
-        List<Match> matches = new ArrayList<>();
+    static long decompressedLength2(String input) {
+        List<Long> counts = LongStream.range(0, input.length()).mapToObj(i -> 1L).collect(Collectors.toList());
         Matcher matcher = PATTERN.matcher(input);
 
         while (matcher.find()) {
-            matches.add(new Match(matcher));
-        }
-
-        if (matches.isEmpty()) {
-            return input.length();
-        }
-        else {
-            return helper2(matches, 0, 0, input.length());
-        }
-    }
-
-    static int helper2(List<Match> matches, int matchIndex, int start, int end) {
-        int length = 0;
-        Match rootMatch = matches.get(matchIndex);
-        int position = rootMatch.sequenceStart;
-        length += (rootMatch.matchStart - start);  // Alpha characters before match
-
-        for (int m = matchIndex + 1; m < matches.size(); m++) {
-
-            Match match = matches.get(m);
-            if (match.sequenceStart < end) {
-                length += rootMatch.repeats * helper2(matches, m, position, rootMatch.sequenceEnd);
-                position = match.sequenceEnd;
-            }
-            else {
-                break;
+            Match match = new Match(matcher);
+            for (int i = match.sequenceStart; i < match.sequenceEnd; i++) {
+                counts.set(i, counts.get(i) * match.repeats);
             }
         }
 
-        if (position < rootMatch.sequenceEnd) {
-            length += (rootMatch.sequenceEnd - position) * rootMatch.repeats;
-            position = rootMatch.sequenceEnd;
+        long length = 0;
+        for (int i=0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if ('A' <= c && c <= 'Z') {
+                length += counts.get(i);
+            }
         }
-        length += end - position;
-
         return length;
     }
 
@@ -105,8 +84,8 @@ public class Day9Decompression {
         return length;
     }
 
-    static int decompressedLength2(StringProvider input) throws Exception {
-        int length = 0;
+    static long decompressedLength2(StringProvider input) throws Exception {
+        long length = 0;
         while (input.hasMore()) {
             length += decompressedLength2(input.next());
         }
@@ -115,6 +94,6 @@ public class Day9Decompression {
 
     public static void main(String[] args) throws Exception{
         System.out.println("Length 1: " + decompressedLength(StringProvider.forFile("2016Day9Input.txt")));
-        System.out.println("Length 2: " + decompressedLength(StringProvider.forFile("2016Day9Input.txt")));
+        System.out.println("Length 2: " + decompressedLength2(StringProvider.forFile("2016Day9Input.txt")));
     }
 }
