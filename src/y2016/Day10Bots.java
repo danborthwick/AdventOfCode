@@ -10,30 +10,81 @@ import java.util.regex.Pattern;
 import static java.lang.Integer.parseInt;
 
 public class Day10Bots {
-    class Bot {
-        public int low = -1;
-        public int high = -1;
-
-        public void assign(int value) {
-            if (low == -1) {
-                low = value;
-            }
-            else if (value < low) {
-                high = low;
-                low = value;
-            }
-            else {
-                high = value;
-            }
-        }
-    }
 
     Map<Integer, Bot> bots = new HashMap<>();
+    Map<Integer, Output> outputs = new HashMap<>();
 
     final static Pattern ASSIGN = Pattern.compile("value (?<value>\\d+) goes to bot (?<bot>\\d+)");
     final static Pattern GIVE = Pattern.compile("bot (?<from>\\d+) gives low to (?<lowType>output|bot) (?<lowId>\\d+) and high to (?<highType>output|bot) (?<highId>\\d+)");
 
-    int findComparer(StringProvider input, int lowCompare, int highCompare) throws Exception {
+    interface Node {
+        int get(Node getter);
+    }
+
+    class Bot implements Node {
+        int cachedLow = -1;
+        int cachedHigh = -1;
+        Node input1, input2;
+        Node outputLow, outputHigh;
+
+        public int get(Node getter) {
+            ensureCache();
+            return (getter == outputLow) ? cachedLow : cachedHigh;
+        }
+
+        public boolean matches(int low, int high) {
+            ensureCache();
+            return low == cachedLow && high == cachedHigh;
+        }
+
+        private void ensureCache() {
+            if (cachedLow == -1) {
+                cachedLow = input1.get(this);
+                cachedHigh = input2.get(this);
+
+                if (cachedHigh < cachedLow) {
+                    int swap = cachedHigh;
+                    cachedHigh = cachedLow;
+                    cachedLow = swap;
+                }
+            }
+        }
+
+        public void addInput(Node input) {
+            if (input1 == null) {
+                input1 = input;
+            }
+            else {
+                input2 = input;
+            }
+        }
+    }
+
+    class Input implements Node {
+        int value;
+
+        public Input(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public int get(Node getter) {
+            return value;
+        }
+    }
+
+    class Output implements Node {
+        Node input;
+
+        @Override
+        public int get(Node getter) {
+            return input.get(this);
+        }
+
+        void addInput(Node input) { this.input = input; }
+    }
+
+    void prepare(StringProvider input) throws Exception {
 
         while (input.hasMore()) {
             String instruction = input.next();
@@ -47,10 +98,7 @@ public class Day10Bots {
                         throw new Exception("Unknown instruction " + instruction);
                     }
 
-                    int bot = give(give, lowCompare, highCompare);
-                    if (bot != -1) {
-                        return bot;
-                    }
+                    give(give);
                 }
             }
             catch (Exception e) {
@@ -58,8 +106,25 @@ public class Day10Bots {
                 throw new Exception("Error in " + instruction + e.getMessage());
             }
         }
+    }
+
+    int findComparer(int lowCompare, int highCompare) throws Exception {
+        for (Map.Entry<Integer, Bot> entry : bots.entrySet()) {
+            if (entry.getValue().matches(lowCompare, highCompare)) {
+                return entry.getKey();
+            }
+        }
 
         throw new Exception("Bot not found");
+    }
+
+    int product() {
+        int product = 1;
+        for (int i=0; i <= 2; i++) {
+            Output output = getOutput(i);
+            product *= output.get(null);
+        }
+        return product;
     }
 
     private void assign(Matcher instruction) {
@@ -67,40 +132,54 @@ public class Day10Bots {
         int botId = parseInt(instruction.group("bot"));
 
         Bot bot = getBot(botId);
-        bot.assign(value);
+        bot.addInput(new Input(value));
     }
 
     private Bot getBot(int id) {
         return bots.computeIfAbsent(id, key -> new Bot());
     }
 
-    private int give(Matcher instruction, int lowCompare, int highCompare) {
+    private Output getOutput(int id) {
+        return outputs.computeIfAbsent(id, key -> new Output());
+    }
+
+    private void give(Matcher instruction) {
         int fromId = parseInt(instruction.group("from"));
         String lowType = instruction.group("lowType");
         int lowId = parseInt(instruction.group("lowId"));
         String highType = instruction.group("highType");
         int highId = parseInt(instruction.group("highId"));
 
-        Bot from = bots.get(fromId);
-
-        if (from.low == lowCompare && from.high == highCompare) {
-            return fromId;
-        }
+        Bot from = getBot(fromId);
 
         if (lowType.equals("bot")) {
-            getBot(lowId).assign(from.low);
+            Bot to = getBot(lowId);
+            from.outputLow = to;
+            to.addInput(from);
+        }
+        else {
+            Output to = getOutput(lowId);
+            from.outputLow = to;
+            to.addInput(from);
         }
 
         if (highType.equals("bot")) {
-            getBot(highId).assign((from.high));
+            Bot to = getBot(highId);
+            from.outputHigh = to;
+            to.addInput(from);
         }
-
-        return -1;
+        else {
+            Output to = getOutput(highId);
+            from.outputHigh = to;
+            to.addInput(from);
+        }
     }
-
 
     public static void main(String[] args) throws Exception {
         StringProvider input = StringProvider.forFile("2016Day10Input.txt");
-        System.out.println("Bot " + new Day10Bots().findComparer(input, 17, 61));
+        Day10Bots bots = new Day10Bots();
+        bots.prepare(input);
+        System.out.println("Comparer: " + bots.findComparer(17, 61));
+        System.out.println("Product: " + bots.product());
     }
 }
