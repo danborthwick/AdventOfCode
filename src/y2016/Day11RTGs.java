@@ -82,7 +82,7 @@ public class Day11RTGs {
         elevatorShift = elementCount * 2;
         stateCount = (int) Math.pow(4, elevatorShift + 1);
 
-        nextStates = calculateNextStates(stateCount);
+        nextStates = calculateNextStates();
     }
 
     public int minSteps() {
@@ -108,39 +108,56 @@ public class Day11RTGs {
         return distanceToState.get(targetState);
     }
 
-    private List<Set<Integer>> calculateNextStates(int stateCount) {
+    class Pair {
+        public int first, second;
+
+        public Pair(int first, int second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
+    private List<Set<Integer>> calculateNextStates() {
+        System.out.println("Calculate next states for " + stateCount + " states");
+        long percent = -1;
+        long startTime= System.currentTimeMillis();
+
         //TODO: Prune generator/generator pairs here
         //TODO: Prune incompatible chip/generator pairs here
         final List<Integer> elements = IntStream.range(0, elevatorShift + 1).mapToObj(i -> new Integer(i)).collect(Collectors.toList());
-        Chooser<Integer> choices = new Chooser<>(elements);
-        final int maxMoves = (int) choices.numberOfChoices(2) * 2;
+        Chooser<Integer> chooser = new Chooser<>(elements);
+        final int maxMoves = (int) chooser.numberOfChoices(2) * 2;
+        final List<Pair> choices = new ArrayList<>(maxMoves);
+        chooser.choose(2, choice -> { choices.add(new Pair(choice.get(0), choice.get(1))); return null; });
 
         List<Set<Integer>> nextStates = IntStream.range(0, stateCount).mapToObj(state -> new HashSet<Integer>(maxMoves)).collect(Collectors.toList());
         for (int state = 0; state < stateCount; state++) {
             int fromState = state;
             int fromFloor = getFloor(state, elevatorShift);
 
-            Set<Integer> stateNextStates = nextStates.get(state);
-            choices.choose(2, choice -> {
-                int firstElement = choice.get(0);
-                int secondElement = choice.get(1);
+            long percentNow = ((long) state * 100L) / stateCount;
+            if (percentNow != percent) {
+                long elapsed = (System.currentTimeMillis() - startTime) / 1000L;
+                System.out.println("Completed " + percentNow + "% in " + elapsed + " seconds");
+                percent = percentNow;
+            }
 
+            Set<Integer> stateNextStates = nextStates.get(state);
+            for (Pair choice : choices) {
                 if (fromFloor > 0) {
-                    int toState = move(fromFloor, Direction.DOWN, fromState, firstElement, secondElement);
+                    int toState = move(fromFloor, Direction.DOWN, fromState, choice.first, choice.second);
                     if (toState != INVALID_STATE) {
                         stateNextStates.add(toState);
                     }
                 }
 
                 if (fromFloor < 3) {
-                    int toState = move(fromFloor, Direction.UP, fromState, firstElement, secondElement);
+                    int toState = move(fromFloor, Direction.UP, fromState, choice.first, choice.second);
                     if (toState != INVALID_STATE) {
                         stateNextStates.add(toState);
                     }
                 }
-
-                return null;
-            });
+            }
         }
         return nextStates;
     }
@@ -249,5 +266,19 @@ public class Day11RTGs {
         StringProvider input = StringProvider.forFile("2016Day11Input.txt");
         Day11RTGs rtgs = new Day11RTGs(input);
         System.out.println("Min steps: " + rtgs.minSteps());
+
+        StringProvider input2 = StringProvider.forArray(new String[] {
+                "The first floor contains a polonium generator, a thulium generator, a thulium-compatible microchip, a promethium generator, a ruthenium generator, " +
+                        "a ruthenium-compatible microchip, a cobalt generator, and a cobalt-compatible microchip." +
+                        " and a elerium generator and a elerium-compatible microchip" +
+                        " and a dilithium generator and a dilithium-compatible microchip",
+
+                        "The second floor contains a polonium-compatible microchip and a promethium-compatible microchip.",
+                        "The third floor contains nothing relevant.",
+                        "The fourth floor contains nothing relevant."
+        });
+
+//        Day11RTGs part2 = new Day11RTGs(input2);
+//        System.out.println("Min steps 2: " + part2.minSteps());
     }
 }
