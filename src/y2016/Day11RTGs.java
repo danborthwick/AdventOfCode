@@ -19,7 +19,6 @@ public class Day11RTGs {
     final int stateCount;
     final int elevatorShift;
     final List<String> elements;
-    final Map<Integer, Set<Integer>> nextStates;
 
     static class Direction {
         static final int UP = 1;
@@ -78,31 +77,30 @@ public class Day11RTGs {
         elementCount = elements.size();
         elevatorShift = elementCount * 2;
         stateCount = (int) Math.pow(4, elevatorShift + 1);
-
-        nextStates = calculateNextStates();
     }
 
     public int minSteps() {
         int targetState = stateCount - 1;
+        List<Pair> choices = getChoices();
 
-        List<Integer> distanceToState = IntStream.range(0, stateCount).mapToObj(i -> new Integer(Integer.MAX_VALUE)).collect(Collectors.toList());
-        distanceToState.set(initialState, 0);
+        Set<Integer> allVisited = new HashSet<>();
+        Set<Integer> visitedLastMove = new HashSet<>();
+        visitedLastMove.add(initialState);
+        allVisited.add(initialState);
 
-        while (distanceToState.get(targetState) == Integer.MAX_VALUE) {
-            for (int state = 0; state < stateCount; state++) {
-                int fromDistance = distanceToState.get(state);
-                if (fromDistance == Integer.MAX_VALUE) { continue; }
-                int toDistance = fromDistance + 1;
+        int move = 0;
+        while (!allVisited.contains(targetState)) {
+            Set<Integer> visitedThisMove = new HashSet<>();
 
-                for (int nextState : nextStates.get(state)) {
-                    if (toDistance < distanceToState.get(nextState)) {
-                        distanceToState.set(nextState, toDistance);
-                    }
-                }
+            for (Integer fromState : visitedLastMove) {
+                getNextStates(fromState, choices, visitedThisMove, allVisited);
             }
+
+            visitedLastMove = visitedThisMove;
+            move++;
         }
 
-        return distanceToState.get(targetState);
+        return move;
     }
 
     class Pair {
@@ -125,38 +123,49 @@ public class Day11RTGs {
         for (int state = 0; state < stateCount; state++) {
             if (!isSafe(state)) continue;
 
-            int fromFloor = getFloor(state, elevatorShift);
-
-            long percentNow = ((long) state * 100L) / stateCount;
+            long percentNow = ((long) state * 1000L) / stateCount;
             if (percentNow != percent) {
                 long elapsed = (System.currentTimeMillis() - startTime) / 1000L;
                 System.out.println("Completed " + percentNow + "% in " + elapsed + " seconds");
                 percent = percentNow;
             }
 
-            Set<Integer> stateNextStates = new HashSet<>(16);
+            Set<Integer> stateNextStates = getNextStates(state, choices);
             nextStates.put(state, stateNextStates);
-
-            for (Pair choice : choices) {
-                if (fromFloor > 0) {
-                    int toState = move(fromFloor, Direction.DOWN, state, choice.first, choice.second);
-                    if (toState != INVALID_STATE) {
-                        stateNextStates.add(toState);
-                    }
-                }
-
-                if (fromFloor < 3) {
-                    int toState = move(fromFloor, Direction.UP, state, choice.first, choice.second);
-                    if (toState != INVALID_STATE) {
-                        stateNextStates.add(toState);
-                    }
-                }
-            }
         }
         return nextStates;
     }
 
-    private List<Pair> getChoices() {
+    Set<Integer> getNextStates(int state, List<Pair> choices) {
+        Set<Integer> nextStates = new HashSet<>(16);
+        getNextStates(state, choices, nextStates, new HashSet<>());
+        return nextStates;
+    }
+
+    void getNextStates(int state, List<Pair> choices, Set<Integer> nextStates, Set<Integer> visited) {
+        int fromFloor = getFloor(state, elevatorShift);
+
+        for (Pair choice : choices) {
+            if (fromFloor > 0) {
+                int toState = move(fromFloor, Direction.DOWN, state, choice.first, choice.second);
+                if (toState != INVALID_STATE && !visited.contains(toState)) {
+                    nextStates.add(toState);
+                    visited.add(toState);
+                }
+            }
+
+            if (fromFloor < 3) {
+                int toState = move(fromFloor, Direction.UP, state, choice.first, choice.second);
+                if (toState != INVALID_STATE && !visited.contains(toState)) {
+                    nextStates.add(toState);
+                    visited.add(toState);
+                }
+            }
+        }
+    }
+
+
+    List<Pair> getChoices() {
         //TODO: Prune generator/generator pairs here
         //TODO: Prune incompatible chip/generator pairs here
         final List<Integer> elements = IntStream.range(0, elevatorShift + 1).mapToObj(i -> new Integer(i)).collect(Collectors.toList());
@@ -192,6 +201,7 @@ public class Day11RTGs {
     }
 
     private boolean compatible(int firstElement, int secondElement) {
+        // Chooser ensures first < second
         if (firstElement < elementCount) {
             // First is gen
             if (secondElement < elementCount) {
@@ -207,18 +217,7 @@ public class Day11RTGs {
             }
         }
         else {
-            // First is chip or nothing
-            if (secondElement >= elementCount) {
-                // Two chips
-                return true;
-            }
-            else if ((firstElement = secondElement) == elementCount) {
-                // Chip/gen pair
-                return true;
-            }
-            else {
-                return firstElement == elevatorShift;   // Single chip or generator
-            }
+            return true;
         }
     }
 
