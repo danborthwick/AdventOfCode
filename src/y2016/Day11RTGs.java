@@ -3,10 +3,7 @@ package y2016;
 import util.Chooser;
 import util.StringProvider;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -22,7 +19,7 @@ public class Day11RTGs {
     final int stateCount;
     final int elevatorShift;
     final List<String> elements;
-    final List<Set<Integer>> nextStates;
+    final Map<Integer, Set<Integer>> nextStates;
 
     static class Direction {
         static final int UP = 1;
@@ -117,22 +114,17 @@ public class Day11RTGs {
         }
     }
 
-    private List<Set<Integer>> calculateNextStates() {
+    private Map<Integer, Set<Integer>> calculateNextStates() {
         System.out.println("Calculate next states for " + stateCount + " states");
         long percent = -1;
         long startTime= System.currentTimeMillis();
+        final List<Pair> choices = getChoices();
 
-        //TODO: Prune generator/generator pairs here
-        //TODO: Prune incompatible chip/generator pairs here
-        final List<Integer> elements = IntStream.range(0, elevatorShift + 1).mapToObj(i -> new Integer(i)).collect(Collectors.toList());
-        Chooser<Integer> chooser = new Chooser<>(elements);
-        final int maxMoves = (int) chooser.numberOfChoices(2) * 2;
-        final List<Pair> choices = new ArrayList<>(maxMoves);
-        chooser.choose(2, choice -> { choices.add(new Pair(choice.get(0), choice.get(1))); return null; });
+        Map<Integer, Set<Integer>> nextStates = new HashMap<>();
 
-        List<Set<Integer>> nextStates = IntStream.range(0, stateCount).mapToObj(state -> new HashSet<Integer>(maxMoves)).collect(Collectors.toList());
         for (int state = 0; state < stateCount; state++) {
-            int fromState = state;
+            if (!isSafe(state)) continue;
+
             int fromFloor = getFloor(state, elevatorShift);
 
             long percentNow = ((long) state * 100L) / stateCount;
@@ -142,17 +134,19 @@ public class Day11RTGs {
                 percent = percentNow;
             }
 
-            Set<Integer> stateNextStates = nextStates.get(state);
+            Set<Integer> stateNextStates = new HashSet<>(16);
+            nextStates.put(state, stateNextStates);
+
             for (Pair choice : choices) {
                 if (fromFloor > 0) {
-                    int toState = move(fromFloor, Direction.DOWN, fromState, choice.first, choice.second);
+                    int toState = move(fromFloor, Direction.DOWN, state, choice.first, choice.second);
                     if (toState != INVALID_STATE) {
                         stateNextStates.add(toState);
                     }
                 }
 
                 if (fromFloor < 3) {
-                    int toState = move(fromFloor, Direction.UP, fromState, choice.first, choice.second);
+                    int toState = move(fromFloor, Direction.UP, state, choice.first, choice.second);
                     if (toState != INVALID_STATE) {
                         stateNextStates.add(toState);
                     }
@@ -160,6 +154,24 @@ public class Day11RTGs {
             }
         }
         return nextStates;
+    }
+
+    private List<Pair> getChoices() {
+        //TODO: Prune generator/generator pairs here
+        //TODO: Prune incompatible chip/generator pairs here
+        final List<Integer> elements = IntStream.range(0, elevatorShift + 1).mapToObj(i -> new Integer(i)).collect(Collectors.toList());
+        Chooser<Integer> chooser = new Chooser<>(elements);
+        final int maxMoves = (int) chooser.numberOfChoices(2) * 2;
+        final List<Pair> choices = new ArrayList<>(maxMoves);
+        chooser.choose(2, choice -> {
+            Pair pair = new Pair(choice.get(0), choice.get(1));
+            if (pair.first < elementCount && pair.second >= elementCount && pair.second != elevatorShift && ((pair.second - pair.first) != elementCount)) {
+                return null;
+            }
+            choices.add(pair);
+            return null;
+        });
+        return choices;
     }
 
     private int move(int fromFloor, int direction, int fromState, int firstElement, int secondElement) {
@@ -278,7 +290,7 @@ public class Day11RTGs {
                         "The fourth floor contains nothing relevant."
         });
 
-//        Day11RTGs part2 = new Day11RTGs(input2);
-//        System.out.println("Min steps 2: " + part2.minSteps());
+        Day11RTGs part2 = new Day11RTGs(input2);
+        System.out.println("Min steps 2: " + part2.minSteps());
     }
 }
