@@ -7,21 +7,23 @@ public class Day17Vault {
     private final MessageDigest md5;
     private String seed;
     int shortestLength = Integer.MAX_VALUE;
-    String shortest;
+    int longestLength = Integer.MIN_VALUE;
+    String shortest, longest;
 
     Day17Vault(String seed) throws Exception {
         this.seed = seed;
         md5 = MessageDigest.getInstance("MD5");
+
+        byte[] path = Arrays.copyOf(seed.getBytes(), 1024);
+        helper(path, 0, 0, 0);
     }
 
     String shortestPath() throws Exception {
-        byte[] path = Arrays.copyOf(seed.getBytes(), 1024);
-        int pathLength = 0;
-        int posX = 0, posY = 0;
-
-        helper(path, pathLength, posX, posY);
-
         return shortest;
+    }
+
+    String longestPath() throws Exception {
+        return longest;
     }
 
     private void helper(byte[] path, int pathLength, int posX, int posY) {
@@ -30,6 +32,10 @@ public class Day17Vault {
             if (pathLength < shortestLength) {
                 shortest = new String(path, seed.length(), pathLength);
                 shortestLength = pathLength;
+            }
+            if (pathLength > longestLength) {
+                longest = new String(path, seed.length(), pathLength);
+                longestLength = pathLength;
             }
             return;
         }
@@ -67,6 +73,7 @@ public class Day17Vault {
 
     public static void main(String[] args) throws Exception {
         Day17Vault vault = new Day17Vault("qljzarfv");
-        System.out.println("Path 1: " + vault.shortestPath());
+        System.out.println("Shortest: " + vault.shortestPath());
+        System.out.println("Longest: " + vault.longestPath().length());
     }
 }
