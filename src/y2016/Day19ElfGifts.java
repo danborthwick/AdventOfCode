@@ -26,15 +26,10 @@ public class Day19ElfGifts {
         }
     }
 
-    public static void main(String[] args) {
-        System.out.println("Winner 3017957 is: " + winner(3017957));
-        System.out.println("Winner center 3017957 is: " + winnerCenter(3017957));
-    }
-
     static class Elf {
+
         public Elf prev, next;
         public int id;
-
         public Elf(int id) {
             this.id = id;
         }
@@ -52,8 +47,8 @@ public class Day19ElfGifts {
             next.prev = this.prev;
             return this.next;
         }
-    }
 
+    }
     public static int winnerCenter(int elfCount) {
         Elf root = new Elf(1);
         Elf prev = root;
@@ -67,12 +62,22 @@ public class Day19ElfGifts {
         prev.next = root;
         root.prev = prev;
 
-        Elf taker;
-        for (taker = root; taker.next != taker; taker = taker.next) {
-            Elf giver = taker.skip(elfCount / 2);
-            giver.destroy();
+        Elf taker = root;
+        Elf giver = taker.skip(elfCount / 2);
+
+        while (taker.next != taker) {
+            giver = giver.destroy();
+            if (elfCount % 2 == 1) {
+                giver = giver.next;
+            }
+            taker = taker.next;
             elfCount--;
         }
         return taker.id;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Winner 3017957 is: " + winner(3017957));
+        System.out.println("Winner center 3017957 is: " + winnerCenter(3017957));
     }
 }
