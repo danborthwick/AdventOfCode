@@ -5,24 +5,29 @@ import util.MutableInt;
 import util.StringProvider;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.lang.Integer.parseInt;
 
 public class Day22GridComputer {
 
     public static final Pattern PATTERN = Pattern.compile("/dev/grid/node-x(?<x>\\d+)-y(?<y>\\d+)\\s+(?<size>\\d+)T\\s+(?<used>\\d+)T\\s+(?<avail>\\d+)T");
-    private final ArrayList<Node> nodes;
+    final List<Node> allNodes;
+    final List<List<Node>> grid;
+    final int gridSize;
 
     class Node {
+
         int used;
         int avail;
         int size;
     }
-
     public Day22GridComputer(StringProvider input) throws Exception {
-        nodes = new ArrayList<>();
+        allNodes = new ArrayList<>();
         input.next();
 
         while (input.hasMore()) {
@@ -36,12 +41,23 @@ public class Day22GridComputer {
             node.used = parseInt(matcher.group("used"));
             node.avail = parseInt(matcher.group("avail"));
 
-            nodes.add(node);
+            allNodes.add(node);
         }
+
+        gridSize = (int) Math.sqrt(allNodes.size());
+        grid = IntStream.range(0, gridSize).mapToObj(y -> allNodes.subList(y * gridSize, (y + 1) * gridSize)).collect(Collectors.toList());
+    }
+
+    public Node node(int x, int y) {
+        return grid.get(x).get(y);
+    }
+
+    int minimumMoves() {
+        return -1;
     }
 
     private int viablePairs() {
-        Chooser<Node> chooser = new Chooser<>(nodes);
+        Chooser<Node> chooser = new Chooser<>(allNodes);
         final MutableInt total = new MutableInt(0);
 
         chooser.choose(2, choice -> {
