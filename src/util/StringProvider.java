@@ -55,4 +55,10 @@ public interface StringProvider {
         }
         return list;
     }
+
+    default String[] asArray() throws Exception {
+        List<String> list = asList();
+        String[] array = new String[list.size()];
+        return list.toArray(array);
+    }
 }

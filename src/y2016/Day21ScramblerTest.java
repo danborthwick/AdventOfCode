@@ -1,13 +1,14 @@
 package y2016;
 
 import org.junit.Test;
+import util.StringProvider;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class Day21ScramblerTest {
     @Test
-    public void examples() throws Exception {
+    public void scramble() throws Exception {
         Day21Scrambler scrambler = new Day21Scrambler("abcde");
 
         assertThat(scrambler.stepAndGetState("swap position 4 with position 0"), is("ebcda"));
@@ -21,17 +22,22 @@ public class Day21ScramblerTest {
     }
 
     @Test
-    public void reverse() throws Exception {
-        Day21Scrambler scrambler = new Day21Scrambler("decab");
+    public void unscramble() throws Exception {
+        Day21Scrambler scrambler = new Day21Scrambler("abcde");
 
-        assertThat(scrambler.reverseAndGetState("rotate based on position of letter d"), is("ecabd"));
-        assertThat(scrambler.reverseAndGetState("rotate based on position of letter b"), is("abdec"));
-        assertThat(scrambler.reverseAndGetState("move position 3 to position 0"), is("bdeac"));
-        assertThat(scrambler.reverseAndGetState("move position 1 to position 4"), is("bcdea"));
-        assertThat(scrambler.reverseAndGetState("rotate left 1 step"), is("abcde"));
-        assertThat(scrambler.reverseAndGetState("reverse positions 0 through 4"), is("edcba"));
-        assertThat(scrambler.reverseAndGetState("swap letter d with letter b"), is("ebcda"));
-        assertThat(scrambler.reverseAndGetState("swap position 4 with position 0"), is("abcde"));
+        StringProvider instructions = StringProvider.forArray(new String[]{
+                "swap position 4 with position 0",
+                "swap letter d with letter b",
+                "reverse positions 0 through 4",
+                "rotate left 1 step",
+                "move position 1 to position 4",
+                "move position 3 to position 0",
+                "rotate based on position of letter b",
+                "rotate based on position of letter d"
+        });
+
+        assertThat(scrambler.unscramble(instructions, "decab"), is("abcde"));
+
     }
 
     @Test

@@ -1,7 +1,10 @@
 package y2016;
 
 import org.apache.commons.lang3.ArrayUtils;
+import util.Permutor;
 import util.StringProvider;
+
+import java.util.stream.Collectors;
 
 public class Day21Scrambler {
     private String initialState;
@@ -12,20 +15,41 @@ public class Day21Scrambler {
         this.state = state.toCharArray();
     }
 
-    String run(StringProvider input) throws Exception {
+    String scramble(StringProvider input) throws Exception {
         while (input.hasMore()) {
             step(input.next());
         }
         return new String(state);
     }
 
-    String stepAndGetState(String instruction) throws Exception {
-        step(instruction);
-        return new String(state);
+    String unscramble(StringProvider input, String scrambled) throws Exception {
+
+        String[] instructions = input.asArray();
+
+        Permutor<Character> permutor = new Permutor<>(initialState.chars().mapToObj(c -> (char) c).collect(Collectors.toList()));
+        Character[] fromCharacters = new Character[state.length];
+        final StringBuilder result = new StringBuilder();
+
+        permutor.permute(fromStateList -> {
+            fromStateList.toArray(fromCharacters);
+            state = ArrayUtils.toPrimitive(fromCharacters);
+
+            try {
+                String candidate = scramble(StringProvider.forArray(instructions));
+                if (candidate.equals(scrambled) && result.length() == 0) {
+                    result.append(ArrayUtils.toPrimitive(fromCharacters));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+
+        return result.toString();
     }
 
-    public String reverseAndGetState(String instruction) throws Exception {
-        stepReverse(instruction);
+    String stepAndGetState(String instruction) throws Exception {
+        step(instruction);
         return new String(state);
     }
 
@@ -51,14 +75,10 @@ public class Day21Scrambler {
     }
 
     void step(String instruction) throws Exception {
-        stepHelper(instruction, true);
+        stepHelper(instruction);
     }
 
-    void stepReverse(String instruction) throws Exception {
-        stepHelper(instruction, false);
-    }
-
-    private void stepHelper(String instruction, boolean forward) throws Exception {
+    private void stepHelper(String instruction) throws Exception {
         String[] parts = instruction.split(" ");
         switch (parts[0]) {
             case "swap":
@@ -79,20 +99,11 @@ public class Day21Scrambler {
             case "rotate":
                 switch (parts[1]) {
                     case "based":
-                        if (forward) {
-                            rotateBasedOnPositionOf(getChar(parts, 6));
-                        }
-                        else {
-                            //Unimplemented
-                        }
+                        rotateBasedOnPositionOf(getChar(parts, 6));
                         break;
 
                     default:
-                        int direction = getDirection(parts, 1);
-                        if (!forward) {
-                            direction = -direction;
-                        }
-                        rotate(direction, getInt(parts, 2));
+                        rotate(getDirection(parts, 1), getInt(parts, 2));
                         break;
                 }
                 break;
@@ -102,12 +113,7 @@ public class Day21Scrambler {
                 break;
 
             case "move":
-                if (forward) {
-                    move(getInt(parts, 2), getInt(parts, 5));
-                }
-                else {
-                    move(getInt(parts, 5), getInt(parts, 2));
-                }
+                move(getInt(parts, 2), getInt(parts, 5));
                 break;
 
             default:
@@ -189,6 +195,10 @@ public class Day21Scrambler {
     public static void main(String[] args) throws Exception {
         Day21Scrambler scrambler = new Day21Scrambler("abcdefgh");
         StringProvider input = StringProvider.forFile("2016Day21Input.txt");
-        System.out.println("Part1: " + scrambler.run(input));
+        System.out.println("Part1: " + scrambler.scramble(input));
+
+        Day21Scrambler unscrambler = new Day21Scrambler("abcdefgh");
+        input = StringProvider.forFile("2016Day21Input.txt");
+        System.out.println("Part2: " + unscrambler.unscramble(input, "fbgdceah"));
     }
 }
