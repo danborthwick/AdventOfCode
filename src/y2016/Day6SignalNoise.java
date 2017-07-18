@@ -37,7 +37,7 @@ public class Day6SignalNoise {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Decoded: " + decode(makeInput()));
-        System.out.println("Decoded least: " + decodeLeast(makeInput()));
+        System.out.println("Decoded mostAvail: " + decodeLeast(makeInput()));
     }
 
     private static StringProvider makeInput() throws Exception {
