@@ -15,8 +15,15 @@ public class Day22GridComputerTest {
 
     @Test
     public void gridConstruction() throws Exception {
-        assertThat(makeComputer().node(0, 2).size, is(32));
-        assertThat(makeComputer().node(2, 1).used, is(8));
+        Day22GridComputer computer = makeComputer();
+        assertThat(computer.node(0, 2).size, is(32));
+        assertThat(computer.node(2, 1).used, is(8));
+    }
+
+    @Test
+    public void viablePairs() throws Exception {
+        Day22GridComputer computer = makeComputer();
+        assertThat(computer.viablePairs(), is(7));
     }
 
     Day22GridComputer makeComputer() throws Exception {
