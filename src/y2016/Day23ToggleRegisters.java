@@ -14,7 +14,7 @@ public class Day23ToggleRegisters {
     List<Instruction> instructions;
     int[] registers = new int[4];
 
-    static final Pattern PATTERN = Pattern.compile("(?<op>cpy|inc|dec|jnz|tgl) (?<p1>[\\w\\d\\-]+) ?(?<p2>[\\w\\d\\-]+)?");
+    static final Pattern PATTERN = Pattern.compile("(?<op>cpy|inc|dec|jnz|tgl|mul|nop) (?<p1>[\\w\\d\\-]+) ?(?<p2>[\\w\\d\\-]+)?");
 
     public Day23ToggleRegisters(StringProvider input) throws Exception {
         instructions = input.asList().stream().map(s -> {
@@ -127,6 +127,10 @@ public class Day23ToggleRegisters {
                     setRegister(instruction.address1(), instruction.p1() - 1);
                     break;
 
+                case "mul":
+                    setRegister(instruction.address1(), instruction.p1() * instruction.p2());
+                    break;
+
                 case "jnz":
                     if (instruction.p1() != 0) {
                         counter += instruction.p2() - 1;
@@ -141,6 +145,9 @@ public class Day23ToggleRegisters {
                     }
                     break;
 
+                case "nop":
+                    break;
+
                 default:
                     throw new Exception("Unknown operation: " + instruction.operation);
             }
@@ -153,6 +160,14 @@ public class Day23ToggleRegisters {
         registers[r] = value;
     }
 
+    void replaceInstruction(int from, int to, String instruction) throws Exception {
+        Instruction in = new Instruction(instruction);
+        instructions.set(from, in);
+        for (int c = from + 1; c <= to; c++) {
+            instructions.set(c, new Instruction("nop 0"));
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         StringProvider input = StringProvider.forFile("2016Day23Input.txt");
         Day23ToggleRegisters registers = new Day23ToggleRegisters(input);
@@ -161,6 +176,8 @@ public class Day23ToggleRegisters {
 
         input = StringProvider.forFile("2016Day23Input.txt");
         registers = new Day23ToggleRegisters(input);
+        registers.replaceInstruction(2, 9, "mul a b");
+
         registers.setRegister(0, 12);
         System.out.println("Part 2: " + registers.execute());
     }
